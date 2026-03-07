@@ -1,0 +1,72 @@
+
+services:
+
+  # ─────────────────────────────────────────────
+  # MongoDB – base de données NoSQL
+  # ─────────────────────────────────────────────
+  mongodb:
+    image: mongo:7.0
+    container_name: healthcare_mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: adminpassword
+      MONGO_INITDB_DATABASE: healthcare_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+      - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - healthcare_net
+
+  # ─────────────────────────────────────────────
+  # Service de migration – s'exécute une fois
+  # puis s'arrête (restart: "no")
+  # ─────────────────────────────────────────────
+  migration:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: healthcare_migration
+    restart: "no"
+    depends_on:
+      - mongodb
+    environment:
+      MONGO_URI: "mongodb://admin:adminpassword@mongodb:27017/"
+      DB_NAME: "healthcare_db"
+      COLL_NAME: "patients"
+    volumes:
+      - ./healthcare_dataset.csv:/app/healthcare_dataset.csv:ro
+    command: ["python", "scripts/migrate.py", "--csv", "/app/healthcare_dataset.csv"]
+    networks:
+      - healthcare_net
+
+  # ─────────────────────────────────────────────
+  # Mongo Express – interface web d'administration
+  # Accessible sur http://localhost:8081
+  # ─────────────────────────────────────────────
+  mongo-express:
+    image: mongo-express:1.0.2
+    container_name: healthcare_mongo_express
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: adminpassword
+      ME_CONFIG_MONGODB_URL: "mongodb://admin:adminpassword@mongodb:27017/"
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin123
+    networks:
+      - healthcare_net
+
+volumes:
+  mongo_data:
+    driver: local
+
+networks:
+  healthcare_net:
+    driver: bridge
