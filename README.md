@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # P5_Data
 Présentation projet 5
 =======
@@ -292,4 +291,3 @@ Voir la présentation PowerPoint fournie pour le détail des options AWS recomma
 
 *Projet réalisé dans le cadre du stage Data Engineer chez DataSoluTech.*
 *Auteur : Stagiaire – Mars 2026*
->>>>>>> 7ca2fad (Premier commit)

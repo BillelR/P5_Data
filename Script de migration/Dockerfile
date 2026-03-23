@@ -17,10 +17,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copie du code source
 COPY scripts/ ./scripts/
 
-# Variable d'environnement par défaut (surchargeable via docker-compose)
-ENV MONGO_URI="mongodb://admin:adminpassword@mongodb:27017/"
-ENV DB_NAME="healthcare_db"
-ENV COLL_NAME="patients"
-
 # Commande par défaut
 CMD ["python", "scripts/migrate.py", "--csv", "/app/healthcare_dataset.csv"]
